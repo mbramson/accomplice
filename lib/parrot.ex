@@ -4,15 +4,11 @@ defmodule Parrot do
   """
 
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Parrot.hello
-      :world
-
+  `Parrot.group/2` accepts a list of unordered elements and produces a list of
+  groups of those elements subjected to the passed in constraints.
   """
-  def hello do
-    :world
+  @spec group(list(any()), list(Constraint.t)) :: list(any())
+  def group(elements, constraints) do
+    []
   end
 end
