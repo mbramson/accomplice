@@ -1,6 +1,7 @@
 # Accomplice
 
-**TODO: Add description**
+Accomplice is a library for solving constrained optimization problems where the
+goal is to group items in a list according to certain rules or constraints.
 
 ## Installation
 
