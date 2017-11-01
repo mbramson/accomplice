@@ -1,8 +1,8 @@
 defmodule GroupSizeTest do
   use ExUnit.Case
-  doctest Parrot.Constraint.GroupSize
+  doctest Accomplice.Constraint.GroupSize
 
-  alias Parrot.Constraint.{GroupSize, GroupSizeError}
+  alias Accomplice.Constraint.{GroupSize, GroupSizeError}
 
   describe "validate_args/1" do
     test "empty map is invalid" do

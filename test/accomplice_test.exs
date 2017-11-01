@@ -1,10 +1,10 @@
-defmodule ParrotTest do
+defmodule AccompliceTest do
   use ExUnit.Case
-  doctest Parrot
+  doctest Accomplice
 
   describe "group/2" do
     test "returns empty list when given an empty list" do
-      assert Parrot.group([], []) == []
+      assert Accomplice.group([], []) == []
     end
 
   end

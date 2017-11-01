@@ -1,9 +1,9 @@
 defmodule ConstraintTest do
   use ExUnit.Case
-  doctest Parrot
+  doctest Accomplice
 
-  alias Parrot.Constraint
-  import Parrot.Constraint
+  alias Accomplice.Constraint
+  import Accomplice.Constraint
 
   describe "generate/2" do
     test "returns an error tuple when generating an invalid constraint type" do

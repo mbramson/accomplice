@@ -1,6 +1,6 @@
-defmodule Parrot.Constraint.GroupSize do
+defmodule Accomplice.Constraint.GroupSize do
 
-  alias Parrot.Constraint.GroupSizeError
+  alias Accomplice.Constraint.GroupSizeError
 
   def validate_args(args) when args == %{} do
     raise GroupSizeError, message: "No arguments were supplied to a GroupSize constraint"
@@ -38,6 +38,6 @@ defmodule Parrot.Constraint.GroupSize do
 end
 
 
-defmodule Parrot.Constraint.GroupSizeError do
+defmodule Accomplice.Constraint.GroupSizeError do
   defexception message: "Invalid GroupSize Constraint"
 end

@@ -1,7 +1,7 @@
-defmodule Parrot.Constraint do
+defmodule Accomplice.Constraint do
   defstruct type: :none, args: []
 
-  alias Parrot.Constraint
+  alias Accomplice.Constraint
 
   @type t :: %Constraint{type: constraint_type(), args: any()}
   @type constraint_type :: :none | :group_size
