@@ -44,9 +44,9 @@ defmodule Accomplice.Constraint.GroupSize do
     raise GroupSizeError, message: "GroupSize constraint args must be a map"
   end
 
-  def set_default_args(args) when args == %{} do
-    %{minimum: 1, ideal: 2, maximum: 2}
-  end
+  def default_args(), do: %{minimum: 1, ideal: 2, maximum: 2}
+
+  def set_default_args(args) when args == %{}, do: default_args
   def set_default_args(%{minimum: _, ideal: _, maximum: _} = args), do: args
   def set_default_args(%{minimum: _minimum, maximum: maximum} = args) do
     args |> Map.put(:ideal, maximum)
