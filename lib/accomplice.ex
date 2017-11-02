@@ -54,7 +54,8 @@ defmodule Accomplice do
   end
 
   def group_size_constraint(constraints) do
-    case constraints |> Enum.find(fn c -> c[:type] == :group_size end) do
+    maybe_group_size = constraints |> Enum.find(fn c -> c[:type] == :group_size end)
+    case maybe_group_size do
       nil ->
         Accomplice.Constraint.GroupSize.default_args
       group_size_constraint ->
