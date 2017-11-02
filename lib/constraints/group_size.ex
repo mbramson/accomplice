@@ -1,5 +1,6 @@
 defmodule Accomplice.Constraint.GroupSize do
 
+  alias Accomplice.Constraint
   alias Accomplice.Constraint.GroupSizeError
 
   def validate_args(args) when is_map(args) do
@@ -37,7 +38,7 @@ defmodule Accomplice.Constraint.GroupSize do
       raise GroupSizeError, message: "Ideal must be between Minimum and Maximum inclusive"
     end
 
-    true
+    %Constraint{type: :group_size, args: args}
   end
   def validate_args(_) do
     raise GroupSizeError, message: "GroupSize constraint args must be a map"

@@ -2,6 +2,7 @@ defmodule GroupSizeTest do
   use ExUnit.Case
   doctest Accomplice.Constraint.GroupSize
 
+  alias Accomplice.Constraint
   alias Accomplice.Constraint.{GroupSize, GroupSizeError}
 
   describe "validate_args/1" do
@@ -12,10 +13,16 @@ defmodule GroupSizeTest do
     end
 
     test "any number of valid arguments can be supplied" do
-      assert true == GroupSize.validate_args(%{minimum: 2})
-      assert true == GroupSize.validate_args(%{ideal: 2})
-      assert true == GroupSize.validate_args(%{maximum: 2})
-      assert true == GroupSize.validate_args(%{})
+      assert GroupSize.validate_args(%{minimum: 2})
+      assert GroupSize.validate_args(%{ideal: 2})
+      assert GroupSize.validate_args(%{maximum: 2})
+      assert GroupSize.validate_args(%{})
+    end
+
+    test "returns a Constraint struct" do
+      args = %{minimum: 1, ideal: 2, maximum: 3}
+      assert %Constraint{type: :group_size, args: args} == GroupSize.validate_args(args)
+
     end
 
     test "args containing unknown key is invalid" do
@@ -29,13 +36,13 @@ defmodule GroupSizeTest do
     end
 
     test "minimum must be less than or equal to maximum" do
-      assert true == GroupSize.validate_args(%{minimum: 2, maximum: 2})
-      assert true == GroupSize.validate_args(%{minimum: 1, maximum: 2})
+      assert GroupSize.validate_args(%{minimum: 2, maximum: 2})
+      assert GroupSize.validate_args(%{minimum: 1, maximum: 2})
       assert_raise GroupSizeError, fn -> GroupSize.validate_args(%{minimum: 3, maximum: 2}) end
     end
 
     test "minimum and maxmimum cannot be less than 1" do
-      assert true == GroupSize.validate_args(%{minimum: 1, maximum: 1})
+      assert GroupSize.validate_args(%{minimum: 1, maximum: 1})
       assert_raise GroupSizeError, fn -> GroupSize.validate_args(%{minimum: 0, maximum: 2}) end
       assert_raise GroupSizeError, fn -> GroupSize.validate_args(%{minimum: -1, maximum: 2}) end
       assert_raise GroupSizeError, fn -> GroupSize.validate_args(%{minimum: 2, maximum: 0}) end
@@ -43,10 +50,10 @@ defmodule GroupSizeTest do
     end
 
     test "ideal must be between minimum and maximum inclusive" do
-      assert true == GroupSize.validate_args(%{minimum: 1, ideal: 2, maximum: 3})
-      assert true == GroupSize.validate_args(%{minimum: 1, ideal: 2, maximum: 2})
-      assert true == GroupSize.validate_args(%{minimum: 1, ideal: 2, maximum: 2})
-      assert true == GroupSize.validate_args(%{minimum: 2, ideal: 2, maximum: 2})
+      assert GroupSize.validate_args(%{minimum: 1, ideal: 2, maximum: 3})
+      assert GroupSize.validate_args(%{minimum: 1, ideal: 2, maximum: 2})
+      assert GroupSize.validate_args(%{minimum: 1, ideal: 2, maximum: 2})
+      assert GroupSize.validate_args(%{minimum: 2, ideal: 2, maximum: 2})
       assert_raise GroupSizeError, fn -> GroupSize.validate_args(%{minimum: 2, ideal: 1, maximum: 3}) end
       assert_raise GroupSizeError, fn -> GroupSize.validate_args(%{minimum: 2, ideal: 4, maximum: 3}) end
     end
