@@ -10,10 +10,10 @@ defmodule AccompliceTest do
     end
 
     test "when given a group_size constraint with a min and max of 1, returns appropriate values" do
-      constraint = %Constraint{type: :group_size, args: %{minimum: 1, ideal: 1, maximum: 1}}
-      assert Accomplice.group([], [constraint]) == []
-      assert Accomplice.group([1], [constraint]) == [[1]]
-      assert Accomplice.group([1, 2], [constraint]) == [[1], [2]]
+      constraints = %{minimum: 1, maximum: 1}
+      assert Accomplice.group([], constraints) == []
+      assert Accomplice.group([1], constraints) == [[1]]
+      assert Accomplice.group([1, 2], constraints) == [[1], [2]]
     end
   end
 end
