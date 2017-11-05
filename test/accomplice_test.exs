@@ -2,7 +2,7 @@ defmodule AccompliceTest do
   use ExUnit.Case
   doctest Accomplice
 
-  alias Accomplice.Constraint
+  import OrderInvariantCompare
 
   describe "group/2" do
     test "returns empty list when given an empty list" do
@@ -13,7 +13,7 @@ defmodule AccompliceTest do
       constraints = %{minimum: 1, maximum: 1}
       assert Accomplice.group([], constraints) == []
       assert Accomplice.group([1], constraints) == [[1]]
-      assert Accomplice.group([1, 2], constraints) == [[1], [2]]
+      assert Accomplice.group([1, 2], constraints) <~> [[1], [2]]
     end
   end
 end
