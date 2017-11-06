@@ -46,18 +46,23 @@ defmodule Accomplice do
         # random element from the ungrouped list and add it to the
         # current_group. recurseively call group with the new grouped and rest
         # of the ungrouped items
-        #
-        # this case will be handled differently once the ideal constraint is
-        # implemented
         {new_element, rest_of_ungrouped} = pop_random_element_from_list(ungrouped)
         new_current_group = [new_element | current_group]
         new_grouped = [new_current_group | complete_groups]
-        group(new_grouped, rest_of_ungrouped, constraints)
+        case group(new_grouped, rest_of_ungrouped, constraints) do
+          {:error, _} ->
+            # If a constraint is violated by further grouping, then try again with a new
+            # group, leaving this group less than the maximum.
+            new_grouped = [[], current_group | complete_groups]
+            group(new_grouped, ungrouped, constraints)
+          grouped ->
+            grouped
+        end
     end
   end
 
   @spec pop_random_element_from_list(list(any())) :: {any(), list(any())}
-  def pop_random_element_from_list(list) do
+  defp pop_random_element_from_list(list) do
     element_index = Enum.random(1..length(list)) - 1
     List.pop_at(list, element_index)
   end
