@@ -42,5 +42,24 @@ defmodule AccompliceTest do
       assert Accomplice.group([1, 2, 3], constraints) == {:error, :group_size_below_minimum}
       assert Accomplice.group([1, 2, 3, 4, 5], constraints) == {:error, :group_size_below_minimum}
     end
+
+    test "when given a group_size constraint with a min of 1 and max of 2, returns appropriate values" do
+      constraints = %{minimum: 1, maximum: 2}
+      assert Accomplice.group([], constraints) == []
+
+      assert Accomplice.group([1], constraints) == [[1]]
+
+      grouping = Accomplice.group([1, 2], constraints)
+      assert grouping |> grouping_is([2])
+
+      grouping = Accomplice.group([1, 2, 3], constraints)
+      assert grouping |> grouping_is([2, 1])
+
+      grouping = Accomplice.group([1, 2, 3, 4], constraints)
+      assert grouping |> grouping_is([2, 2])
+
+      grouping = Accomplice.group([1, 2, 3, 4, 5], constraints)
+      assert grouping |> grouping_is([2, 2, 1])
+    end
   end
 end

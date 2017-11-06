@@ -3,14 +3,12 @@ defmodule Accomplice do
   Documentation for Accomplice.
   """
 
-  alias Accomplice.Constraint
-
   @doc """
   `Accomplice.group/2` accepts a list of unordered elements and produces a list of
   groups of those elements subjected to the passed in constraints.
   """
   @spec group(list(any()), map()) :: list(any())
-  def group([], constraints), do: []
+  def group([], _constraints), do: []
   def group(elements, constraints) do
     group([], elements, constraints)
   end
@@ -26,7 +24,7 @@ defmodule Accomplice do
   def group([], ungrouped, constraints) do
     group([[]], ungrouped, constraints)
   end
-  def group([current_group | complete_groups] = grouped, ungrouped, constraints = %{minimum: minimum, maximum: maximum}) do
+  def group([current_group | complete_groups], ungrouped, constraints = %{minimum: minimum, maximum: maximum}) do
 
     cond do
       length(current_group) < minimum ->
@@ -44,16 +42,23 @@ defmodule Accomplice do
         group(new_grouped, ungrouped, constraints)
 
       true ->
-        # this group has at least the minimum amount of elements. append a new empty current
-        # group and call recursively
-        new_grouped = [[], current_group | complete_groups]
-        group(new_grouped, ungrouped, constraints)
+        # this group has at least the minimum amount of elements. Pluck a
+        # random element from the ungrouped list and add it to the
+        # current_group. recurseively call group with the new grouped and rest
+        # of the ungrouped items
+        #
+        # this case will be handled differently once the ideal constraint is
+        # implemented
+        {new_element, rest_of_ungrouped} = pop_random_element_from_list(ungrouped)
+        new_current_group = [new_element | current_group]
+        new_grouped = [new_current_group | complete_groups]
+        group(new_grouped, rest_of_ungrouped, constraints)
     end
   end
 
   @spec pop_random_element_from_list(list(any())) :: {any(), list(any())}
   def pop_random_element_from_list(list) do
     element_index = Enum.random(1..length(list)) - 1
-    {element, rest_of_list} = List.pop_at(list, element_index)
+    List.pop_at(list, element_index)
   end
 end
