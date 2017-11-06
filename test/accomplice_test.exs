@@ -2,7 +2,12 @@ defmodule AccompliceTest do
   use ExUnit.Case
   doctest Accomplice
 
-  import OrderInvariantCompare
+  import OrderInvariantCompare # for <~> operator
+
+  def grouping_is(grouping, expected_grouping) when is_list(grouping) do
+    group_counts = Enum.map(grouping, fn element -> length(element) end)
+    group_counts <~> expected_grouping
+  end
 
   describe "group/2" do
     test "returns empty list when given an empty list" do
@@ -22,19 +27,20 @@ defmodule AccompliceTest do
       assert Accomplice.group([], constraints) == []
 
       grouping = Accomplice.group([1, 2], constraints)
-      assert length(grouping) == 1
-      assert Enum.at(grouping, 0) <~> [1, 2]
+      assert grouping |> grouping_is([2])
 
       grouping = Accomplice.group([1, 2, 3, 4], constraints)
-      assert length(grouping) == 2
-      assert grouping |> Enum.at(0) |> length == 2
-      assert grouping |> Enum.at(1) |> length == 2
+      assert grouping |> grouping_is([2, 2])
 
       grouping = Accomplice.group([1, 2, 3, 4, 5, 6], constraints)
-      assert length(grouping) == 3
-      assert grouping |> Enum.at(0) |> length == 2
-      assert grouping |> Enum.at(1) |> length == 2
-      assert grouping |> Enum.at(2) |> length == 2
+      assert grouping |> grouping_is([2, 2, 2])
+    end
+
+    test "when given a group_size constraint with a min and max of 2, and odd length list, errors" do
+      constraints = %{minimum: 2, maximum: 2}
+      assert Accomplice.group([1], constraints) == {:error, :group_size_below_minimum}
+      assert Accomplice.group([1, 2, 3], constraints) == {:error, :group_size_below_minimum}
+      assert Accomplice.group([1, 2, 3, 4, 5], constraints) == {:error, :group_size_below_minimum}
     end
   end
 end

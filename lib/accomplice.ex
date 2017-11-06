@@ -16,7 +16,13 @@ defmodule Accomplice do
   end
 
   @spec group(list(any()), list(any()), map()) :: list(any())
-  def group(grouped, [], _constraints), do: grouped
+  def group([current_group | _] = grouped, [], %{minimum: minimum}) do
+    if length(current_group) < minimum do
+      {:error, :group_size_below_minimum}
+    else
+      grouped
+    end
+  end
   def group([], ungrouped, constraints) do
     group([[]], ungrouped, constraints)
   end
