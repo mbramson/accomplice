@@ -21,7 +21,8 @@ defmodule Accomplice.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:order_invariant_compare, "~> 1.0", only: :test}
+      {:order_invariant_compare, "~> 1.0", only: :test},
+      { :quixir, "~> 0.9", only: :test }
     ]
   end
 end
