@@ -3,6 +3,8 @@ defmodule Accomplice do
   Documentation for Accomplice.
   """
 
+  import Accomplice.Helpers
+
   @doc """
   `Accomplice.group/2` accepts a list of unordered elements and produces a list of
   groups of those elements subjected to the passed in constraints.
@@ -61,9 +63,12 @@ defmodule Accomplice do
     end
   end
 
-  @spec pop_random_element_from_list(list(any())) :: {any(), list(any())}
-  defp pop_random_element_from_list(list) do
-    element_index = Enum.random(1..length(list)) - 1
-    List.pop_at(list, element_index)
+  @spec group(list(any()), list(any()), map()) :: list(any())
+  def group([current_group | _] = grouped, [], %{minimum: minimum}) do
+    if length(current_group) < minimum do
+      {:error, :group_size_below_minimum}
+    else
+      grouped
+    end
   end
 end
