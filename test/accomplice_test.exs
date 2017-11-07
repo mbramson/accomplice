@@ -9,7 +9,7 @@ defmodule AccompliceTest do
     group_counts <~> expected_grouping
   end
 
-  describe "group/2" do
+  describe "group/2 for simple groupings with only min and max constraints" do
     test "returns empty list when given an empty list" do
       assert Accomplice.group([], []) == []
     end

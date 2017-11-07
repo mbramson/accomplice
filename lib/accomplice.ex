@@ -10,21 +10,21 @@ defmodule Accomplice do
   @spec group(list(any()), map()) :: list(any())
   def group([], _constraints), do: []
   def group(elements, constraints) do
-    group([], elements, constraints)
+    group_simple([], elements, constraints)
   end
 
-  @spec group(list(any()), list(any()), map()) :: list(any())
-  def group([current_group | _] = grouped, [], %{minimum: minimum}) do
+  @spec group_simple(list(any()), list(any()), map()) :: list(any())
+  def group_simple([current_group | _] = grouped, [], %{minimum: minimum}) do
     if length(current_group) < minimum do
       {:error, :group_size_below_minimum}
     else
       grouped
     end
   end
-  def group([], ungrouped, constraints) do
-    group([[]], ungrouped, constraints)
+  def group_simple([], ungrouped, constraints) do
+    group_simple([[]], ungrouped, constraints)
   end
-  def group([current_group | complete_groups], ungrouped, constraints = %{minimum: minimum, maximum: maximum}) do
+  def group_simple([current_group | complete_groups], ungrouped, constraints = %{minimum: minimum, maximum: maximum}) do
 
     cond do
       length(current_group) < minimum ->
@@ -33,13 +33,13 @@ defmodule Accomplice do
         {new_element, rest_of_ungrouped} = pop_random_element_from_list(ungrouped)
         new_current_group = [new_element | current_group]
         new_grouped = [new_current_group | complete_groups]
-        group(new_grouped, rest_of_ungrouped, constraints)
+        group_simple(new_grouped, rest_of_ungrouped, constraints)
 
       length(current_group) >= maximum ->
         # add another empty list to the grouped list so that subsequent calls start
         # adding to it
         new_grouped = [[], current_group | complete_groups]
-        group(new_grouped, ungrouped, constraints)
+        group_simple(new_grouped, ungrouped, constraints)
 
       true ->
         # this group has at least the minimum amount of elements. Pluck a
@@ -49,12 +49,12 @@ defmodule Accomplice do
         {new_element, rest_of_ungrouped} = pop_random_element_from_list(ungrouped)
         new_current_group = [new_element | current_group]
         new_grouped = [new_current_group | complete_groups]
-        case group(new_grouped, rest_of_ungrouped, constraints) do
+        case group_simple(new_grouped, rest_of_ungrouped, constraints) do
           {:error, _} ->
             # If a constraint is violated by further grouping, then try again with a new
             # group, leaving this group less than the maximum.
             new_grouped = [[], current_group | complete_groups]
-            group(new_grouped, ungrouped, constraints)
+            group_simple(new_grouped, ungrouped, constraints)
           grouped ->
             grouped
         end
