@@ -8,8 +8,10 @@ defmodule Accomplice.Helpers do
     List.pop_at(list, element_index)
   end
 
+  @type actions :: nonempty_list(:add | :complete) | :impossible
+
   @doc false
-  @spec create_actions(list(list(any())), list(any()), map()) :: nonempty_list({:add, any()} | :complete) | :impossible
+  @spec create_actions(list(list(any())), list(any()), map()) :: actions
   def create_actions(current_group, ungrouped, %{minimum: minimum, ideal: ideal, maximum: maximum}) do
     current_group_length = length(current_group)
     cond do
@@ -39,9 +41,9 @@ defmodule Accomplice.Helpers do
   end
 
   @spec add_actions(list(any())) :: list({:add, any()})
+  defp add_actions([]), do: []
   defp add_actions(ungrouped) do
-    ungrouped
-    |> Enum.shuffle
-    |> Enum.map(fn element -> {:add, element} end)
+    for _ <- 1..length(ungrouped), do: :add
   end
+
 end
