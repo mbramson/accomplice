@@ -76,7 +76,10 @@ defmodule Accomplice do
   end
   def group([], ungrouped, constraints), do: group([[]], ungrouped, constraints)
   def group([current_group | _] = grouped, ungrouped, constraints) do
+    # Get a list of actions we can try from here, ordered such that the actions most
+    # likely to meet the constraints come first
     actions = create_actions(current_group, ungrouped, constraints)
+    # Attempt to take the actions in order
     attempt_actions(actions, grouped, ungrouped, constraints)
   end
 
@@ -84,19 +87,30 @@ defmodule Accomplice do
   def attempt_actions([], _, _, _), do: :impossible
   def attempt_actions(:impossible, _, _, _), do: :impossible
   def attempt_actions([:complete | remaining_actions], grouped, ungrouped, constraints) do
+    # The action is to complete the group. So we just append an empty list to the groups
+    # which will be the new current group
     new_grouped = [[] | grouped]
 
+    # Try to group with the new constraints. If we receive the :impossible atom, then there
+    # are no possible configurations of the remaining elements given the action we just took.
+    # Try a new action. Otherwise, we have a legal configuration, so return it.
     case group(new_grouped, ungrouped, constraints) do
       :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, constraints)
       grouped -> grouped
     end
   end
   def attempt_actions([:add | remaining_actions], grouped, ungrouped, constraints) do
+    # The action is to add an ungrouped element to the current group. Pop an element off
+    # of the ungrouped list and append it to the front of the current_group. Reassemble
+    # the grouped items with the new element,
     [current_group | completed_groups] = grouped
     [element_to_add | new_ungrouped] = ungrouped
     new_current_group = [element_to_add | current_group]
     new_grouped = [new_current_group | completed_groups]
 
+    # Try to group with the new constraints. If we receive the :impossible atom, then there
+    # are no possible configurations of the remaining elements given the action we just took.
+    # Try a new action. Otherwise, we have a legal configuration, so return it.
     case group(new_grouped, new_ungrouped, constraints) do
       :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, constraints)
       grouped -> grouped
