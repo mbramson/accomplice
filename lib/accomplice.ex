@@ -11,6 +11,9 @@ defmodule Accomplice do
   """
   @spec group(list(any()), map()) :: list(any())
   def group([], _constraints), do: []
+  def group(elements, %{minimum: _, ideal: _, maximum: _} = constraints) do
+    group([], elements, constraints)
+  end
   def group(elements, constraints) do
     group_simple([], elements, constraints)
   end
@@ -66,9 +69,37 @@ defmodule Accomplice do
   @spec group(list(any()), list(any()), map()) :: list(any())
   def group([current_group | _] = grouped, [], %{minimum: minimum}) do
     if length(current_group) < minimum do
-      {:error, :group_size_below_minimum}
+      :impossible
     else
       grouped
+    end
+  end
+  def group([], ungrouped, constraints), do: group([[]], ungrouped, constraints)
+  def group([current_group | _] = grouped, ungrouped, constraints) do
+    actions = create_actions(current_group, ungrouped, constraints)
+    attempt_actions(actions, grouped, ungrouped, constraints)
+  end
+
+  @spec attempt_actions(Helpers.actions, list(list(any())), list(any()), map()) :: list(list(any())) | :impossible
+  def attempt_actions([], _, _, _), do: :impossible
+  def attempt_actions(:impossible, _, _, _), do: :impossible
+  def attempt_actions([:complete | remaining_actions], grouped, ungrouped, constraints) do
+    new_grouped = [[] | grouped]
+
+    case group(new_grouped, ungrouped, constraints) do
+      :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, constraints)
+      grouped -> grouped
+    end
+  end
+  def attempt_actions([:add | remaining_actions], grouped, ungrouped, constraints) do
+    [current_group | completed_groups] = grouped
+    [element_to_add | new_ungrouped] = ungrouped
+    new_current_group = [element_to_add | current_group]
+    new_grouped = [new_current_group | completed_groups]
+
+    case group(new_grouped, new_ungrouped, constraints) do
+      :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, constraints)
+      grouped -> grouped
     end
   end
 end

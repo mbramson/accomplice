@@ -121,4 +121,20 @@ defmodule AccompliceTest do
       #Accomplice.group([1, 2, 3], constraints) |> grouping_is([1, 1, 1])
     end
   end
+
+  # Eventually this be folded into group/2
+  describe "group/3" do
+    test "when there are no ungrouped left and the current group is below minimum, returns an error" do
+      assert :impossible = Accomplice.group([[]], [], %{minimum: 1})
+      assert :impossible = Accomplice.group([[], [1]], [], %{minimum: 1})
+      assert :impossible = Accomplice.group([[1]], [], %{minimum: 2})
+      assert :impossible = Accomplice.group([[1], [2, 3]], [], %{minimum: 2})
+    end
+
+    test "when there are no ungrouped left and the current group at or above minimum, returns all groups" do
+      assert [[1]] = Accomplice.group([[1]], [], %{minimum: 1})
+      assert [[1], [2, 3]] = Accomplice.group([[1], [2, 3]], [], %{minimum: 1})
+      assert [[1, 2], [3, 4]] = Accomplice.group([[1, 2], [3, 4]], [], %{minimum: 2})
+    end
+  end
 end
