@@ -117,24 +117,32 @@ defmodule AccompliceTest do
       assert Accomplice.group([], constraints) == []
       assert Accomplice.group([1], constraints) == [[1]]
 
-      #Accomplice.group([1, 2], constraints)    |> grouping_is([1, 1])
-      #Accomplice.group([1, 2, 3], constraints) |> grouping_is([1, 1, 1])
-    end
-  end
-
-  # Eventually this be folded into group/2
-  describe "group/3" do
-    test "when there are no ungrouped left and the current group is below minimum, returns an error" do
-      assert :impossible = Accomplice.group([[]], [], %{minimum: 1})
-      assert :impossible = Accomplice.group([[], [1]], [], %{minimum: 1})
-      assert :impossible = Accomplice.group([[1]], [], %{minimum: 2})
-      assert :impossible = Accomplice.group([[1], [2, 3]], [], %{minimum: 2})
+      Accomplice.group([1, 2], constraints)    |> grouping_is([1, 1])
+      Accomplice.group([1, 2, 3], constraints) |> grouping_is([1, 1, 1])
     end
 
-    test "when there are no ungrouped left and the current group at or above minimum, returns all groups" do
-      assert [[1]] = Accomplice.group([[1]], [], %{minimum: 1})
-      assert [[1], [2, 3]] = Accomplice.group([[1], [2, 3]], [], %{minimum: 1})
-      assert [[1, 2], [3, 4]] = Accomplice.group([[1, 2], [3, 4]], [], %{minimum: 2})
+    test "with a group_size constraint with a min, ideal of 2 and max of 3, returns appropriate values" do
+      constraints = %{minimum: 2, ideal: 2, maximum: 3}
+      assert Accomplice.group([], constraints) == []
+      assert Accomplice.group([1], constraints) == :impossible
+
+      Accomplice.group([1, 2], constraints)             |> grouping_is([2])
+      Accomplice.group([1, 2, 3], constraints)          |> grouping_is([3])
+      Accomplice.group([1, 2, 3, 4], constraints)       |> grouping_is([2, 2])
+      Accomplice.group([1, 2, 3, 4, 5], constraints)    |> grouping_is([3, 2])
+      Accomplice.group([1, 2, 3, 4, 5, 6], constraints) |> grouping_is([2, 2, 2])
+    end
+
+    test "with a group_size constraint with a min of 2, ideal of 3 and max of 4, returns appropriate values" do
+      constraints = %{minimum: 2, ideal: 3, maximum: 4}
+      assert Accomplice.group([], constraints) == []
+      assert Accomplice.group([1], constraints) == :impossible
+
+      Accomplice.group([1, 2], constraints)             |> grouping_is([2])
+      Accomplice.group([1, 2, 3], constraints)          |> grouping_is([3])
+      Accomplice.group([1, 2, 3, 4], constraints)       |> grouping_is([4]) # [2, 2] also acceptable
+      Accomplice.group([1, 2, 3, 4, 5], constraints)    |> grouping_is([3, 2])
+      Accomplice.group([1, 2, 3, 4, 5, 6], constraints) |> grouping_is([3, 3])
     end
   end
 end
