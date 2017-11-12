@@ -5,19 +5,12 @@ defmodule AccompliceHelpersTest do
   alias Accomplice.Helpers
   import OrderInvariantCompare # for <~> operator
 
-  describe "pop_random_element_from_list/1" do
-    test "returns an element and the rest of the list" do
-      ptest original_list: list() do
-        assert {element, rest_of_list} = Helpers.pop_random_element_from_list(original_list)
-        # don't test this if original list is an empty list. nil won't be in it.
-        unless is_nil(element) do
-          assert element in original_list
-        end
-        # don't test this if original list contains non-unique elements. element might be in it.
-        if original_list |> Enum.uniq |> length == length(original_list) do
-          assert element not in rest_of_list
-        end
-      end
+  describe "pop/1" do
+    test "returns the head and tail if the list contains elements" do
+      assert Helpers.pop([1,2,3,4]) == {1, [2,3,4]}
+    end
+    test "returns nil and an empty list if given an empty list" do
+      assert Helpers.pop([]) == {nil, []}
     end
   end
 

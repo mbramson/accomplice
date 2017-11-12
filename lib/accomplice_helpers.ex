@@ -2,12 +2,6 @@ defmodule Accomplice.Helpers do
   @moduledoc false
 
   @doc false
-  @spec pop_random_element_from_list(list(any())) :: {any(), list(any())}
-  def pop_random_element_from_list(list) do
-    element_index = Enum.random(1..length(list)) - 1
-    List.pop_at(list, element_index)
-  end
-
   @spec pop(list(any())) :: {any(), list(any())} | {nil, list(any())}
   def pop([]), do: {nil, []}
   def pop([head | tail]), do: {head, tail}
