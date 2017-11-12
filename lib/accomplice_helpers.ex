@@ -8,6 +8,10 @@ defmodule Accomplice.Helpers do
     List.pop_at(list, element_index)
   end
 
+  @spec pop(list(any())) :: {any(), list(any())} | {nil, list(any())}
+  def pop([]), do: {nil, []}
+  def pop([head | tail]), do: {head, tail}
+
   @type actions :: nonempty_list(:add | :complete) | :impossible
 
   @doc false

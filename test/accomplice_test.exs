@@ -4,6 +4,9 @@ defmodule AccompliceTest do
 
   import OrderInvariantCompare # for <~> operator
 
+  def grouping_is(:impossible, expected_grouping) do
+    flunk("expected grouping of #{inspect expected_grouping} \ngot grouping of      :impossible)")
+  end
   def grouping_is(grouping, expected_grouping) when is_list(grouping) do
     group_counts = Enum.map(grouping, fn element -> length(element) end)
     unless group_counts <~> expected_grouping do
@@ -19,7 +22,7 @@ defmodule AccompliceTest do
       assert Accomplice.group([], %{minimum: 2, maximum: 2}) == []
     end
 
-    test "when given a group_size constraint with a min and max of 1, returns appropriate values" do
+    test "when given a min and max of 1, returns appropriate values" do
       constraints = %{minimum: 1, maximum: 1}
       assert Accomplice.group([], constraints) == []
       assert Accomplice.group([1], constraints) == [[1]]
@@ -27,7 +30,7 @@ defmodule AccompliceTest do
       assert Accomplice.group([1, 2, 3], constraints) <~> [[1], [2], [3]]
     end
 
-    test "when given a group_size constraint with a min and max of 2, returns appropriate values" do
+    test "when given a min and max of 2, returns appropriate values" do
       constraints = %{minimum: 2, maximum: 2}
       assert Accomplice.group([], constraints) == []
 
@@ -36,14 +39,14 @@ defmodule AccompliceTest do
       Accomplice.group([1, 2, 3, 4, 5, 6], constraints) |> grouping_is([2, 2, 2])
     end
 
-    test "when given a group_size constraint with a min and max of 2, and odd length list, errors" do
+    test "when given a min and max of 2, and odd length list, errors" do
       constraints = %{minimum: 2, maximum: 2}
-      assert Accomplice.group([1], constraints) == {:error, :group_size_below_minimum}
-      assert Accomplice.group([1, 2, 3], constraints) == {:error, :group_size_below_minimum}
-      assert Accomplice.group([1, 2, 3, 4, 5], constraints) == {:error, :group_size_below_minimum}
+      assert Accomplice.group([1], constraints) ==             :impossible
+      assert Accomplice.group([1, 2, 3], constraints) ==       :impossible
+      assert Accomplice.group([1, 2, 3, 4, 5], constraints) == :impossible
     end
 
-    test "when given a group_size constraint with a min of 1 and max of 2, returns appropriate values" do
+    test "when given a min of 1 and max of 2, returns appropriate values" do
       constraints = %{minimum: 1, maximum: 2}
       assert Accomplice.group([], constraints) == []
       assert Accomplice.group([1], constraints) == [[1]]
@@ -54,7 +57,7 @@ defmodule AccompliceTest do
       Accomplice.group([1, 2, 3, 4, 5], constraints) |> grouping_is([2, 2, 1])
     end
 
-    test "when given a group_size constraint with a min of 1 and max of 3, returns appropriate values" do
+    test "when given a min of 1 and max of 3, returns appropriate values" do
       constraints = %{minimum: 1, maximum: 3}
       assert Accomplice.group([], constraints) == []
       assert Accomplice.group([1], constraints) == [[1]]
@@ -64,10 +67,10 @@ defmodule AccompliceTest do
       Accomplice.group([1, 2, 3, 4], constraints) |> grouping_is([3, 1])
     end
 
-    test "when given a group_size constraint with a min of 2 and max of 3, returns appropriate values" do
+    test "when given a min of 2 and max of 3, returns appropriate values" do
       constraints = %{minimum: 2, maximum: 3}
       assert Accomplice.group([], constraints) == []
-      assert Accomplice.group([1], constraints) == {:error, :group_size_below_minimum}
+      assert Accomplice.group([1], constraints) == :impossible
 
       Accomplice.group([1, 2], constraints)                |> grouping_is([2])
       Accomplice.group([1, 2, 3], constraints)             |> grouping_is([3])
