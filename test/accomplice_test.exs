@@ -1,6 +1,6 @@
 defmodule AccompliceTest do
   use ExUnit.Case
-  doctest Accomplice
+  doctest Accomplice, import: true
 
   import OrderInvariantCompare # for <~> operator
 

@@ -16,8 +16,7 @@ defmodule Accomplice do
       iex> Accomplice.group(['a', 'b', 'c', 'd', 'e'], %{minimum: 2, maximum: 2})
       :impossible
 
-  The options that can be supplied to grouping functiona are the following:
-
+  The options that can be supplied to grouping functions are the following:
 
   - `:minimum` (required) - The minimum acceptable size of a group. This
   constraint will always be satisfied if a grouping is returned.
@@ -27,19 +26,25 @@ defmodule Accomplice do
 
   - `:ideal` (optional) - The ideal group number that the grouping algorithm
   will try to satisfy. Note that because the algorithm returns the first
-  grouping that satsifies the hard constraints, the returned grouping is not
+  grouping that satisfies the hard constraints, the returned grouping is not
   guaranteed to adhere to the ideal option even if there might exist some
   configuration of groupings that would contain more groupings that are the
-  ideal size.
+  ideal size. The grouping functions do not perform an exhaustive search.
   """
 
   import Accomplice.Helpers
 
   @doc """
-  `Accomplice.group/2` accepts a list of unordered elements and produces a list of
-  groups of those elements subjected to the passed in options.
+  Accepts a list of unordered elements and produces a list of groups of those
+  elements subjected to the passed in options. Returns :impossible if the
+  passed in options cannot be satisfied.
+
+  ## Examples:
+      iex> constraints = %{minimum: 2, ideal: 3, maximum: 4}
+      iex> group(['a', 'b', 'c', 'd', 'e', 'f'], constraints)
+      [['f', 'e', 'd'], ['c', 'b', 'a']]
   """
-  @spec group(list(any()), map()) :: list(any())
+  @spec group(list(any()), map()) :: list(any()) | :impossible
   def group([], _options), do: []
   def group(elements, %{minimum: _, ideal: _, maximum: _} = options) do
     group([], elements, options)
@@ -48,18 +53,27 @@ defmodule Accomplice do
     group_simple([], elements, options)
   end
 
-  @spec group_simple(list(any()), list(any()), map()) :: list(any())
-  def group_simple([current_group | _] = grouped, [], %{minimum: minimum}) do
+  @doc """
+  Same as `group/2`, but it shuffles the elements first so that the elements in
+  the returned grouping are in random order.
+  """
+  @spec shuffled_group(list(any()), map()) :: list(any()) | :impossible
+  def shuffled_group(elements, options) do
+    elements |> Enum.shuffle |> group(options)
+  end
+
+  @spec group_simple(list(any()), list(any()), map()) :: list(any()) | :impossible
+  defp group_simple([current_group | _] = grouped, [], %{minimum: minimum}) do
     if length(current_group) < minimum do
       :impossible
     else
       grouped
     end
   end
-  def group_simple([], ungrouped, options) do
+  defp group_simple([], ungrouped, options) do
     group_simple([[]], ungrouped, options)
   end
-  def group_simple([current_group | complete_groups], ungrouped, options = %{minimum: minimum, maximum: maximum}) do
+  defp group_simple([current_group | complete_groups], ungrouped, options = %{minimum: minimum, maximum: maximum}) do
 
     cond do
       length(current_group) < minimum ->
@@ -96,16 +110,16 @@ defmodule Accomplice do
     end
   end
 
-  @spec group(list(any()), list(any()), map()) :: list(any())
-  def group([current_group | _] = grouped, [], %{minimum: minimum}) do
+  @spec group(list(any()), list(any()), map()) :: list(any()) | :impossible
+  defp group([current_group | _] = grouped, [], %{minimum: minimum}) do
     if length(current_group) < minimum do
       :impossible
     else
       grouped
     end
   end
-  def group([], ungrouped, options), do: group([[]], ungrouped, options)
-  def group([current_group | _] = grouped, ungrouped, options) do
+  defp group([], ungrouped, options), do: group([[]], ungrouped, options)
+  defp group([current_group | _] = grouped, ungrouped, options) do
     # Get a list of actions we can try from here, ordered such that the actions most
     # likely to meet the constraints come first
     actions = create_actions(current_group, ungrouped, options)
@@ -114,9 +128,9 @@ defmodule Accomplice do
   end
 
   @spec attempt_actions(Helpers.actions, list(list(any())), list(any()), map()) :: list(list(any())) | :impossible
-  def attempt_actions([], _, _, _), do: :impossible
-  def attempt_actions(:impossible, _, _, _), do: :impossible
-  def attempt_actions([:complete | remaining_actions], grouped, ungrouped, options) do
+  defp attempt_actions([], _, _, _), do: :impossible
+  defp attempt_actions(:impossible, _, _, _), do: :impossible
+  defp attempt_actions([:complete | remaining_actions], grouped, ungrouped, options) do
     # The action is to complete the group. So we just append an empty list to the groups
     # which will be the new current group
     new_grouped = [[] | grouped]
@@ -129,7 +143,7 @@ defmodule Accomplice do
       grouped -> grouped
     end
   end
-  def attempt_actions([:add | remaining_actions], grouped, ungrouped, options) do
+  defp attempt_actions([:add | remaining_actions], grouped, ungrouped, options) do
     # The action is to add an ungrouped element to the current group. Pop an element off
     # of the ungrouped list and append it to the front of the current_group. Reassemble
     # the grouped items with the new element,
