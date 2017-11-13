@@ -11,7 +11,7 @@ defmodule Accomplice do
       iex> Accomplice.group(['a', 'b', 'c', 'd', 'e', 'f', 'g'], %{minimum: 2, maximum: 3})
       [['g', 'f'], ['e', 'd'], ['c', 'b', 'a']]
 
-  If the the given options cannot be satisified, then the :impossible atom is returned.
+  If the the given options cannot be satisified, the `:impossible` atom is returned.
 
       iex> Accomplice.group(['a', 'b', 'c', 'd', 'e'], %{minimum: 2, maximum: 2})
       :impossible
@@ -42,7 +42,7 @@ defmodule Accomplice do
   ## Examples:
       iex> constraints = %{minimum: 2, ideal: 3, maximum: 4}
       iex> group(['a', 'b', 'c', 'd', 'e', 'f'], constraints)
-      [['f', 'e', 'd'], ['c', 'b', 'a']]
+      [['f', 'e', 'd'], ['c', 'b', 'f']]
   """
   @spec group(list(any()), map()) :: list(any()) | :impossible
   def group([], _options), do: []
