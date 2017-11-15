@@ -2,6 +2,26 @@ defmodule Accomplice.Helpers do
   @moduledoc false
 
   @doc false
+  @spec validate_options(map()) :: map() | {:error, atom()}
+  def validate_options(%{minimum: min, ideal: ideal, maximum: max} = options) do
+    cond do
+      min < 1 || max < 1 || ideal < 1 -> {:error, :size_constraint_below_one}
+      min > max                       -> {:error, :minimum_above_maximum}
+      ideal < min || ideal > max      -> {:error, :ideal_not_between_min_and_max}
+      true                            -> options
+    end
+  end
+  def validate_options(%{minimum: min, maximum: max} = options) do
+    cond do
+      min < 1 || max < 1 -> {:error, :size_constraint_below_one}
+      min > max          -> {:error, :minimum_above_maximum}
+      true               -> options
+    end
+  end
+  def validate_options(options) when is_map(options), do: {:error, :missing_size_constraint}
+  def validate_options(_), do: {:error, :options_is_not_map}
+
+  @doc false
   @spec pop(list(any())) :: {any(), list(any())} | {nil, list(any())}
   def pop([]), do: {nil, []}
   def pop([head | tail]), do: {head, tail}
@@ -43,5 +63,4 @@ defmodule Accomplice.Helpers do
   defp add_actions(ungrouped) do
     for _ <- 1..length(ungrouped), do: :add
   end
-
 end
