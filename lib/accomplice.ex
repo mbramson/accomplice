@@ -42,15 +42,21 @@ defmodule Accomplice do
   ## Examples:
       iex> constraints = %{minimum: 2, ideal: 3, maximum: 4}
       iex> group(['a', 'b', 'c', 'd', 'e', 'f'], constraints)
-      [['f', 'e', 'd'], ['c', 'b', 'f']]
+      [['f', 'e', 'd'], ['c', 'b', 'a']]
   """
   @spec group(list(any()), map()) :: list(any()) | :impossible
   def group([], _options), do: []
   def group(elements, %{minimum: _, ideal: _, maximum: _} = options) do
-    group([], elements, options)
+    case options |> validate_options do
+      {:error, message} -> {:error, message}
+      options -> group([], elements, options)
+    end
   end
   def group(elements, options) do
-    group_simple([], elements, options)
+    case options |> validate_options do
+      {:error, message} -> {:error, message}
+      options -> group_simple([], elements, options)
+    end
   end
 
   @doc """
