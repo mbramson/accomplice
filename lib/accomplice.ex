@@ -49,7 +49,7 @@ defmodule Accomplice do
   def group(elements, %{minimum: _, ideal: _, maximum: _} = options) do
     case options |> validate_options do
       {:error, message} -> {:error, message}
-      options -> group([], elements, options)
+      options -> group([], elements, options, %{})
     end
   end
   def group(elements, options) do
@@ -116,27 +116,27 @@ defmodule Accomplice do
     end
   end
 
-  @spec group(list(any()), list(any()), map()) :: list(any()) | :impossible
-  defp group([current_group | _] = grouped, [], %{minimum: minimum}) do
+  @spec group(list(any()), list(any()), map(), map()) :: list(any()) | :impossible
+  defp group([current_group | _] = grouped, [], %{minimum: minimum}, _memo) do
     if length(current_group) < minimum do
       :impossible
     else
       grouped
     end
   end
-  defp group([], ungrouped, options), do: group([[]], ungrouped, options)
-  defp group([current_group | _] = grouped, ungrouped, options) do
+  defp group([], ungrouped, options, memo), do: group([[]], ungrouped, options, memo)
+  defp group([current_group | _] = grouped, ungrouped, options, memo) do
     # Get a list of actions we can try from here, ordered such that the actions most
     # likely to meet the constraints come first
     actions = create_actions(current_group, ungrouped, options)
     # Attempt to take the actions in order
-    attempt_actions(actions, grouped, ungrouped, options)
+    attempt_actions(actions, grouped, ungrouped, options, memo)
   end
 
-  @spec attempt_actions(Helpers.actions, list(list(any())), list(any()), map()) :: list(list(any())) | :impossible
-  defp attempt_actions([], _, _, _), do: :impossible
-  defp attempt_actions(:impossible, _, _, _), do: :impossible
-  defp attempt_actions([:complete | remaining_actions], grouped, ungrouped, options) do
+  @spec attempt_actions(Helpers.actions, list(list(any())), list(any()), map(), map()) :: list(list(any())) | :impossible
+  defp attempt_actions([], _, _, _, _), do: :impossible
+  defp attempt_actions(:impossible, _, _, _, _), do: :impossible
+  defp attempt_actions([:complete | remaining_actions], grouped, ungrouped, options, memo) do
     # The action is to complete the group. So we just append an empty list to the groups
     # which will be the new current group
     new_grouped = [[] | grouped]
@@ -144,12 +144,12 @@ defmodule Accomplice do
     # Try to group with the new constraints. If we receive the :impossible atom, then there
     # are no possible configurations of the remaining elements given the action we just took.
     # Try a new action. Otherwise, we have a legal configuration, so return it.
-    case group(new_grouped, ungrouped, options) do
-      :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, options)
+    case group(new_grouped, ungrouped, options, memo) do
+      :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, options, memo)
       grouped -> grouped
     end
   end
-  defp attempt_actions([:add | remaining_actions], grouped, ungrouped, options) do
+  defp attempt_actions([:add | remaining_actions], grouped, ungrouped, options, memo) do
     # The action is to add an ungrouped element to the current group. Pop an element off
     # of the ungrouped list and append it to the front of the current_group. Reassemble
     # the grouped items with the new element,
@@ -161,8 +161,8 @@ defmodule Accomplice do
     # Try to group with the new constraints. If we receive the :impossible atom, then there
     # are no possible configurations of the remaining elements given the action we just took.
     # Try a new action. Otherwise, we have a legal configuration, so return it.
-    case group(new_grouped, new_ungrouped, options) do
-      :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, options)
+    case group(new_grouped, new_ungrouped, options, memo) do
+      :impossible -> attempt_actions(remaining_actions, grouped, ungrouped, options, memo)
       grouped -> grouped
     end
   end
