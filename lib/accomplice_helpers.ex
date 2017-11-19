@@ -67,6 +67,6 @@ defmodule Accomplice.Helpers do
   @doc false
   @spec generate_memo_key(list(any()), list(any())) :: String.t
   def generate_memo_key(current_group, ungrouped) do
-    "#{inspect current_group}|#{inspect ungrouped}"
+    "#{inspect Enum.sort(current_group)}|#{inspect Enum.sort(ungrouped)}"
   end
 end

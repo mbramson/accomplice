@@ -103,5 +103,11 @@ defmodule AccompliceHelpersTest do
         assert memo_key |> String.contains?("|")
       end
     end
+
+    test "returns the same memo_key even if elements are in different orders" do
+      assert Helpers.generate_memo_key([1,2,3,4], [5,6,7,8]) ==
+             Helpers.generate_memo_key([3,2,1,4], [8,5,7,6])
+
+    end
   end
 end
