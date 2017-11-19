@@ -63,4 +63,10 @@ defmodule Accomplice.Helpers do
   defp add_actions(ungrouped) do
     for _ <- 1..length(ungrouped), do: :add
   end
+
+  @doc false
+  @spec generate_memo_key(list(any()), list(any())) :: String.t
+  def generate_memo_key(current_group, ungrouped) do
+    "#{inspect current_group}|#{inspect ungrouped}"
+  end
 end

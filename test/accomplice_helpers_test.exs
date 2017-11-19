@@ -96,4 +96,12 @@ defmodule AccompliceHelpersTest do
       end
     end
   end
+  describe "generate_memo_key/2" do
+    test "returns a string representing the passed in data" do
+      ptest [current_group: list(of: any(), max: 10), ungrouped: list(of: any(), max: 10)], repeat_for: 30 do
+        memo_key = Helpers.generate_memo_key(current_group, ungrouped)
+        assert memo_key |> String.contains?("|")
+      end
+    end
+  end
 end
