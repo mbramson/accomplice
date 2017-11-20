@@ -6,34 +6,34 @@ defmodule AccompliceHelpersTest do
 
   describe "validate_options/1" do
     test "options must be map" do
-      assert {:error, :options_is_not_map} == Helpers.validate_options([])
-      assert {:error, :options_is_not_map} == Helpers.validate_options(nil)
-      assert {:error, :options_is_not_map} == Helpers.validate_options("")
+      assert_raise ArgumentError, fn -> Helpers.validate_options([]) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(nil) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options("") end
     end
 
     test "missing size constraints is invalid" do
-      assert {:error, :missing_size_constraint} == Helpers.validate_options(%{})
-      assert {:error, :missing_size_constraint} == Helpers.validate_options(%{minimum: 1})
-      assert {:error, :missing_size_constraint} == Helpers.validate_options(%{maximum: 1})
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{}) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 1}) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{maximum: 1}) end
     end
 
     test "size constraints must be greater than zero" do
-      assert {:error, :size_constraint_below_one} == Helpers.validate_options(%{minimum: 0, maximum: 1})
-      assert {:error, :size_constraint_below_one} == Helpers.validate_options(%{minimum: 1, maximum: 0})
-      assert {:error, :size_constraint_below_one} == Helpers.validate_options(%{minimum: 1, ideal: 0, maximum: 1})
-      assert {:error, :size_constraint_below_one} == Helpers.validate_options(%{minimum: 1, ideal: 1, maximum: 0})
-      assert {:error, :size_constraint_below_one} == Helpers.validate_options(%{minimum: 0, ideal: 1, maximum: 1})
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 0, maximum: 1}) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 1, maximum: 0}) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 1, ideal: 0, maximum: 1}) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 1, ideal: 1, maximum: 0}) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 0, ideal: 1, maximum: 1}) end
       assert %{} = Helpers.validate_options(%{minimum: 1, maximum: 1})
       assert %{} = Helpers.validate_options(%{minimum: 1, ideal: 1, maximum: 1})
     end
 
     test "min cannot be greater than max" do
-      assert {:error, :minimum_above_maximum} == Helpers.validate_options(%{minimum: 2, maximum: 1})
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 2, maximum: 1}) end
     end
 
     test "ideal must be between min and max" do
-      assert {:error, :ideal_not_between_min_and_max} == Helpers.validate_options(%{minimum: 2, ideal: 1, maximum: 3})
-      assert {:error, :ideal_not_between_min_and_max} == Helpers.validate_options(%{minimum: 2, ideal: 4, maximum: 3})
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 2, ideal: 1, maximum: 3}) end
+      assert_raise ArgumentError, fn -> Helpers.validate_options(%{minimum: 2, ideal: 4, maximum: 3}) end
     end
   end
 

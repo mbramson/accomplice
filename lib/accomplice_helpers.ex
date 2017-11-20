@@ -5,21 +5,33 @@ defmodule Accomplice.Helpers do
   @spec validate_options(map()) :: map() | {:error, atom()}
   def validate_options(%{minimum: min, ideal: ideal, maximum: max} = options) do
     cond do
-      min < 1 || max < 1 || ideal < 1 -> {:error, :size_constraint_below_one}
-      min > max                       -> {:error, :minimum_above_maximum}
-      ideal < min || ideal > max      -> {:error, :ideal_not_between_min_and_max}
-      true                            -> options
+      min < 1     -> raise ArgumentError, message: "minimum constraint is below 1"
+      max < 1     -> raise ArgumentError, message: "maximum constraint is below 1"
+      ideal < 1   -> raise ArgumentError, message: "ideal constraint is below 1"
+      min > max   -> raise ArgumentError, message: "minimum constraint is greater than maximum constraint"
+      ideal < min -> raise ArgumentError, message: "ideal constraint is less than minimum constraint"
+      ideal > max -> raise ArgumentError, message: "ideal constraint s greater than maximum constraint"
+      true        -> options
     end
   end
   def validate_options(%{minimum: min, maximum: max} = options) do
     cond do
-      min < 1 || max < 1 -> {:error, :size_constraint_below_one}
-      min > max          -> {:error, :minimum_above_maximum}
-      true               -> options
+      min < 1   -> raise ArgumentError, message: "minimum constraint is below 1"
+      max < 1   -> raise ArgumentError, message: "maximum constraint is below 1"
+      min > max -> raise ArgumentError, message: "minimum constraint is greater than maximum constraint"
+      true      -> options
     end
   end
-  def validate_options(options) when is_map(options), do: {:error, :missing_size_constraint}
-  def validate_options(_), do: {:error, :options_is_not_map}
+  def validate_options(%{minimum: _} = options) when is_map(options) do
+    raise ArgumentError, message: "missing maximum constraint"
+  end
+  def validate_options(%{maximum: _} = options) when is_map(options) do
+    raise ArgumentError, message: "missing minimum constraint"
+  end
+  def validate_options(_options) when is_map(_options) do
+    raise ArgumentError, message: "missing minimum and maximum constraints"
+  end
+  def validate_options(_), do: raise ArgumentError, message: "options must be a map"
 
   @doc false
   @spec pop(list(any())) :: {any(), list(any())} | {nil, list(any())}
@@ -30,7 +42,7 @@ defmodule Accomplice.Helpers do
 
   @doc false
   @spec create_actions(list(list(any())), list(any()), map()) :: actions
-  def create_actions(current_group, [], %{minimum: minimum, ideal: ideal, maximum: maximum}) do
+  def create_actions(current_group, [], %{minimum: minimum, ideal: _, maximum: _}) do
     current_group_length = length(current_group)
     if current_group_length < minimum do
       :impossible
@@ -38,7 +50,7 @@ defmodule Accomplice.Helpers do
       [:complete]
     end
   end
-  def create_actions(current_group, ungrouped, %{minimum: minimum, ideal: ideal, maximum: maximum}) do
+  def create_actions(current_group, _ungrouped, %{minimum: minimum, ideal: ideal, maximum: maximum}) do
     current_group_length = length(current_group)
     cond do
       current_group_length < minimum ->
