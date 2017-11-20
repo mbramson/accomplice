@@ -28,7 +28,7 @@ defmodule Accomplice.Helpers do
   def validate_options(%{maximum: _} = options) when is_map(options) do
     raise ArgumentError, message: "missing minimum constraint"
   end
-  def validate_options(_options) when is_map(_options) do
+  def validate_options(options) when is_map(options) do
     raise ArgumentError, message: "missing minimum and maximum constraints"
   end
   def validate_options(_), do: raise ArgumentError, message: "options must be a map"
