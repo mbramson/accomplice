@@ -96,4 +96,17 @@ defmodule AccompliceHelpersTest do
       end
     end
   end
+  describe "generate_memo_key/2" do
+    test "returns a string representing the passed in data" do
+      ptest [current_group: list(of: any(), max: 10), ungrouped: list(of: any(), max: 10)], repeat_for: 30 do
+        memo_key = Helpers.generate_memo_key(current_group, ungrouped)
+      end
+    end
+
+    test "returns the same memo_key even if elements are in different orders" do
+      assert Helpers.generate_memo_key([1,2,3,4], [5,6,7,8]) ==
+             Helpers.generate_memo_key([3,2,1,4], [8,5,7,6])
+
+    end
+  end
 end

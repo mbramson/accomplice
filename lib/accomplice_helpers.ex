@@ -63,4 +63,20 @@ defmodule Accomplice.Helpers do
   defp add_actions(ungrouped) do
     for _ <- 1..length(ungrouped), do: :add
   end
+
+  @doc false
+  @spec generate_memo_key(list(any()), list(any())) :: String.t
+  def generate_memo_key(current_group, ungrouped) do
+    current_group_string = convert_list_to_string(current_group)
+    ungrouped_string     = convert_list_to_string(ungrouped)
+    "[#{current_group_string}][#{ungrouped_string}]"
+  end
+
+  @spec convert_list_to_string(list(any())) :: String.t
+  defp convert_list_to_string(list) when is_list(list) do
+    list
+    |> Enum.sort
+    |> Enum.map(&(inspect &1))
+    |> Enum.join(",")
+  end
 end
