@@ -30,17 +30,21 @@ defmodule Accomplice.Helpers do
 
   @doc false
   @spec create_actions(list(list(any())), list(any()), map()) :: actions
+  def create_actions(current_group, [], %{minimum: minimum, ideal: ideal, maximum: maximum}) do
+    current_group_length = length(current_group)
+    if current_group_length < minimum do
+      :impossible
+    else
+      [:complete]
+    end
+  end
   def create_actions(current_group, ungrouped, %{minimum: minimum, ideal: ideal, maximum: maximum}) do
     current_group_length = length(current_group)
     cond do
       current_group_length < minimum ->
         # when the current_group's length is less than the minimum constraint,
-        # our only option is to add en element. If there are no elements to add,
-        # then we have no legal action and so return the :impossible atom
-        case ungrouped do
-          []        -> :impossible
-          ungrouped -> [:add]
-        end
+        # our only option is to add en element.
+        [:add]
       current_group_length == maximum ->
         # when the current_group's length is equal to the maximum constraint,
         # our only option is to complete the group.
@@ -50,19 +54,12 @@ defmodule Accomplice.Helpers do
         # to try adding an element if there are any to add, then we'll try
         # completing the group since we know that we're at least at the minimum
         # length.
-        case ungrouped do
-          []        -> [:complete]
-          ungrouped -> [:add, :complete]
-        end
+        [:add, :complete]
       current_group_length == ideal ->
         # when the current group's length is at ideal, we first want to try
-        # completing the group, then try adding the elements if there are any
-        # to add, since we know that we're below the maximum current_group
-        # length.
-        case ungrouped do
-          []        -> [:complete]
-          ungrouped -> [:complete, :add]
-        end
+        # completing the group, then try adding an element, since we know that
+        # we're below the maximum current_group length.
+        [:complete, :add]
     end
   end
 
