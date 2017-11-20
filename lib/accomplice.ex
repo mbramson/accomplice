@@ -47,18 +47,13 @@ defmodule Accomplice do
   @spec group(list(any()), map()) :: list(any()) | :impossible | {:error, atom()}
   def group([], _options), do: []
   def group(elements, %{minimum: _, ideal: _, maximum: _} = options) do
-    case options |> validate_options do
-      {:error, message} -> {:error, message}
-      options ->
-        {grouping, _memo} = group(elements, [], options, %{})
-        grouping
-    end
+    validate_options(options)
+    {grouping, _memo} = group(elements, [], options, %{})
+    grouping
   end
   def group(elements, options) do
-    case options |> validate_options do
-      {:error, message} -> {:error, message}
-      options -> group_simple(elements, [], options)
-    end
+    validate_options(options)
+    group_simple(elements, [], options)
   end
 
   @doc """
