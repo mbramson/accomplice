@@ -50,7 +50,7 @@ defmodule Accomplice do
     case options |> validate_options do
       {:error, message} -> {:error, message}
       options ->
-        {grouping, _memo} = group([], elements, options, %{})
+        {grouping, _memo} = group(elements, [], options, %{})
         grouping
     end
   end
@@ -82,7 +82,6 @@ defmodule Accomplice do
     group_simple(ungrouped, [[]], options)
   end
   defp group_simple(ungrouped, [current_group | complete_groups], options = %{minimum: minimum, maximum: maximum}) do
-
     cond do
       length(current_group) < minimum ->
         # pluck a random element from the ungrouped list and add it to the current_group.
@@ -118,16 +117,16 @@ defmodule Accomplice do
     end
   end
 
-  @spec group(list(any()), list(any()), map(), map()) :: {list(any()), map()} | {:impossible, map()}
-  defp group([current_group | _] = grouped, [], %{minimum: minimum}, memo) do
+  @spec group(list(any()), list(list(any())), map(), map()) :: {list(any()), map()} | {:impossible, map()}
+  defp group([], [current_group | _] = grouped, %{minimum: minimum}, memo) do
     if length(current_group) < minimum do
       {:impossible, memo}
     else
       {grouped, memo}
     end
   end
-  defp group([], ungrouped, options, memo), do: group([[]], ungrouped, options, memo)
-  defp group([current_group | _] = grouped, ungrouped, options, memo) do
+  defp group(ungrouped, [], options, memo), do: group(ungrouped, [[]], options, memo)
+  defp group(ungrouped, [current_group | _] = grouped, options, memo) do
     # check whether this current group, and the ungrouped elements left have been
     # previously computed as impossible. If they have, no point recomputing.
     memo_key = generate_memo_key(current_group, ungrouped)
@@ -160,7 +159,7 @@ defmodule Accomplice do
     # Try to group with the new constraints. If we receive the :impossible atom, then there
     # are no possible configurations of the remaining elements given the action we just took.
     # Try a new action. Otherwise, we have a legal configuration, so return it.
-    case group(new_grouped, ungrouped, options, memo) do
+    case group(ungrouped, new_grouped, options, memo) do
       {:impossible, new_memo} -> attempt_actions(remaining_actions, grouped, ungrouped, options, new_memo)
       {grouped, new_memo} -> {grouped, new_memo}
     end
@@ -177,7 +176,7 @@ defmodule Accomplice do
     # Try to group with the new constraints. If we receive the :impossible atom, then there
     # are no possible configurations of the remaining elements given the action we just took.
     # Try a new action. Otherwise, we have a legal configuration, so return it.
-    case group(new_grouped, new_ungrouped, options, memo) do
+    case group(new_ungrouped, new_grouped, options, memo) do
       {:impossible, new_memo} -> attempt_actions(remaining_actions, grouped, ungrouped, options, new_memo)
       {grouped, new_memo} -> {grouped, new_memo}
     end
