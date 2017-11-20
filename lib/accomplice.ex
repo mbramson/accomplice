@@ -46,18 +46,26 @@ defmodule Accomplice do
   """
   @spec group(list(any()), map()) :: list(any()) | :impossible | {:error, atom()}
   def group([], _options), do: []
-  def group(elements, %{minimum: _, ideal: _, maximum: _} = options) do
-    case options |> validate_options do
-      {:error, message} -> {:error, message}
-      options ->
-        {grouping, memo} = group([], elements, options, %{})
+  def group(elements, %{minimum: _, ideal: same, maximum: same} = options) do
+    validate_options(options)
+    group_simple(elements, [], options)
+  end
+  def group(elements, %{minimum: min, ideal: _, maximum: _} = options) do
+    validate_options(options)
+    number_of_elements = length(elements)
+    cond do
+      number_of_elements < min -> :impossible
+      true ->
+        {grouping, _memo} = group(elements, [], options, %{})
         grouping
     end
   end
-  def group(elements, options) do
-    case options |> validate_options do
-      {:error, message} -> {:error, message}
-      options -> group_simple([], elements, options)
+  def group(elements, %{minimum: min, maximum: _} = options) do
+    validate_options(options)
+    number_of_elements = length(elements)
+    cond do
+      number_of_elements < min -> :impossible
+      true -> group_simple(elements, [], options)
     end
   end
 
@@ -70,19 +78,18 @@ defmodule Accomplice do
     elements |> Enum.shuffle |> group(options)
   end
 
-  @spec group_simple(list(any()), list(any()), map()) :: list(any()) | :impossible
-  defp group_simple([current_group | _] = grouped, [], %{minimum: minimum}) do
+  @spec group_simple(list(any()), list(list(any())), map()) :: list(any()) | :impossible
+  defp group_simple([], [current_group | _] = grouped, %{minimum: minimum}) do
     if length(current_group) < minimum do
       :impossible
     else
       grouped
     end
   end
-  defp group_simple([], ungrouped, options) do
-    group_simple([[]], ungrouped, options)
+  defp group_simple(ungrouped, [], options) do
+    group_simple(ungrouped, [[]], options)
   end
-  defp group_simple([current_group | complete_groups], ungrouped, options = %{minimum: minimum, maximum: maximum}) do
-
+  defp group_simple(ungrouped, [current_group | complete_groups], options = %{minimum: minimum, maximum: maximum}) do
     cond do
       length(current_group) < minimum ->
         # pluck a random element from the ungrouped list and add it to the current_group.
@@ -90,13 +97,13 @@ defmodule Accomplice do
         {new_element, rest_of_ungrouped} = pop(ungrouped)
         new_current_group = [new_element | current_group]
         new_grouped = [new_current_group | complete_groups]
-        group_simple(new_grouped, rest_of_ungrouped, options)
+        group_simple(rest_of_ungrouped, new_grouped, options)
 
       length(current_group) >= maximum ->
         # add another empty list to the grouped list so that subsequent calls start
         # adding to it
         new_grouped = [[], current_group | complete_groups]
-        group_simple(new_grouped, ungrouped, options)
+        group_simple(ungrouped, new_grouped, options)
 
       true ->
         # this group has at least the minimum amount of elements. Pluck a
@@ -106,28 +113,28 @@ defmodule Accomplice do
         {new_element, rest_of_ungrouped} = pop(ungrouped)
         new_current_group = [new_element | current_group]
         new_grouped = [new_current_group | complete_groups]
-        case group_simple(new_grouped, rest_of_ungrouped, options) do
+        case group_simple(rest_of_ungrouped, new_grouped, options) do
           :impossible ->
             # If a constraint is violated by further grouping, then try again with a new
             # group, leaving this group less than the maximum.
             new_grouped = [[], current_group | complete_groups]
-            group_simple(new_grouped, ungrouped, options)
+            group_simple(ungrouped, new_grouped, options)
           grouped ->
             grouped
         end
     end
   end
 
-  @spec group(list(any()), list(any()), map(), map()) :: {list(any()), map()} | {:impossible, map()}
-  defp group([current_group | _] = grouped, [], %{minimum: minimum}, memo) do
+  @spec group(list(any()), list(list(any())), map(), map()) :: {list(any()), map()} | {:impossible, map()}
+  defp group([], [current_group | _] = grouped, %{minimum: minimum}, memo) do
     if length(current_group) < minimum do
       {:impossible, memo}
     else
       {grouped, memo}
     end
   end
-  defp group([], ungrouped, options, memo), do: group([[]], ungrouped, options, memo)
-  defp group([current_group | _] = grouped, ungrouped, options, memo) do
+  defp group(ungrouped, [], options, memo), do: group(ungrouped, [[]], options, memo)
+  defp group(ungrouped, [current_group | _] = grouped, options, memo) do
     # check whether this current group, and the ungrouped elements left have been
     # previously computed as impossible. If they have, no point recomputing.
     memo_key = generate_memo_key(current_group, ungrouped)
@@ -160,7 +167,7 @@ defmodule Accomplice do
     # Try to group with the new constraints. If we receive the :impossible atom, then there
     # are no possible configurations of the remaining elements given the action we just took.
     # Try a new action. Otherwise, we have a legal configuration, so return it.
-    case group(new_grouped, ungrouped, options, memo) do
+    case group(ungrouped, new_grouped, options, memo) do
       {:impossible, new_memo} -> attempt_actions(remaining_actions, grouped, ungrouped, options, new_memo)
       {grouped, new_memo} -> {grouped, new_memo}
     end
@@ -177,7 +184,7 @@ defmodule Accomplice do
     # Try to group with the new constraints. If we receive the :impossible atom, then there
     # are no possible configurations of the remaining elements given the action we just took.
     # Try a new action. Otherwise, we have a legal configuration, so return it.
-    case group(new_grouped, new_ungrouped, options, memo) do
+    case group(new_ungrouped, new_grouped, options, memo) do
       {:impossible, new_memo} -> attempt_actions(remaining_actions, grouped, ungrouped, options, new_memo)
       {grouped, new_memo} -> {grouped, new_memo}
     end
