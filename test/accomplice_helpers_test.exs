@@ -3,7 +3,6 @@ defmodule AccompliceHelpersTest do
   use Quixir
 
   alias Accomplice.Helpers
-  import OrderInvariantCompare # for <~> operator
 
   describe "validate_options/1" do
     test "options must be map" do
@@ -64,7 +63,7 @@ defmodule AccompliceHelpersTest do
       assert [:add] == Helpers.create_actions([], [1], %{minimum: 1, ideal: 1, maximum: 1})
       assert [:add] == Helpers.create_actions([], [1], %{minimum: 2, ideal: 2, maximum: 2})
       assert [:add] == Helpers.create_actions([1], [2], %{minimum: 2, ideal: 2, maximum: 2})
-      assert [:add, :add] <~> Helpers.create_actions([], [1, 2], %{minimum: 1, ideal: 1, maximum: 1})
+      assert [:add] == Helpers.create_actions([], [1, 2], %{minimum: 1, ideal: 1, maximum: 1})
     end
 
     test "when the current_group is at the maximum constraint, only action is to complete the group" do
@@ -86,8 +85,7 @@ defmodule AccompliceHelpersTest do
       assert [:complete, :add] == Helpers.create_actions([1, 2, 3], [4], %{minimum: 2, ideal: 3, maximum: 4})
       assert [:complete, :add] == Helpers.create_actions([1, 2, 3], [4], %{minimum: 3, ideal: 3, maximum: 4})
 
-      assert [:complete | add_actions] = Helpers.create_actions([1], [2, 3, 4], %{minimum: 1, ideal: 1, maximum: 2})
-      assert add_actions <~> [:add, :add, :add]
+      assert [:complete, :add] = Helpers.create_actions([1], [2, 3, 4], %{minimum: 1, ideal: 1, maximum: 2})
     end
 
     test "there are no invalid inputs" do
@@ -99,14 +97,13 @@ defmodule AccompliceHelpersTest do
   describe "generate_memo_key/2" do
     test "returns a string representing the passed in data" do
       ptest [current_group: list(of: any(), max: 10), ungrouped: list(of: any(), max: 10)], repeat_for: 30 do
-        memo_key = Helpers.generate_memo_key(current_group, ungrouped)
+        Helpers.generate_memo_key(current_group, ungrouped)
       end
     end
 
     test "returns the same memo_key even if elements are in different orders" do
       assert Helpers.generate_memo_key([1,2,3,4], [5,6,7,8]) ==
              Helpers.generate_memo_key([3,2,1,4], [8,5,7,6])
-
     end
   end
 end
