@@ -44,7 +44,7 @@ defmodule Accomplice do
       iex> group(['a', 'b', 'c', 'd', 'e', 'f'], constraints)
       [['f', 'e', 'd'], ['c', 'b', 'a']]
   """
-  @spec group(list(any()), map()) :: list(any()) | :impossible | {:error, atom()}
+  @spec group(list(any()), map()) :: list(any()) | :impossible | no_return()
   def group([], _options), do: []
   def group(elements, %{minimum: _, ideal: same, maximum: same} = options) do
     validate_options(options)
@@ -73,7 +73,7 @@ defmodule Accomplice do
   Same as `group/2`, but it shuffles the elements first so that the elements in
   the returned grouping are in random order.
   """
-  @spec shuffled_group(list(any()), map()) :: list(any()) | :impossible | {:error, atom()}
+  @spec shuffled_group(list(any()), map()) :: list(any()) | :impossible | no_return()
   def shuffled_group(elements, options) do
     elements |> Enum.shuffle |> group(options)
   end
