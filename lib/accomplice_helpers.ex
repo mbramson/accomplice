@@ -39,7 +39,7 @@ defmodule Accomplice.Helpers do
         # then we have no legal action and so return the :impossible atom
         case ungrouped do
           []        -> :impossible
-          ungrouped -> add_actions(ungrouped)
+          ungrouped -> [:add]
         end
       current_group_length == maximum ->
         # when the current_group's length is equal to the maximum constraint,
@@ -47,21 +47,23 @@ defmodule Accomplice.Helpers do
         [:complete]
       current_group_length < ideal ->
         # when the current group's length is less than the ideal, we first want
-        # to try adding an element, then we'll try completing the group since we
-        # know that we're at least at the minimum length.
-        add_actions(ungrouped) ++ [:complete]
+        # to try adding an element if there are any to add, then we'll try
+        # completing the group since we know that we're at least at the minimum
+        # length.
+        case ungrouped do
+          []        -> [:complete]
+          ungrouped -> [:add, :complete]
+        end
       current_group_length == ideal ->
-        # when the current group's length is at ideal, we first want to try completing
-        # the group, then try adding the elements, since we know that we're below the
-        # maximum current_group length.
-        [:complete | add_actions(ungrouped)]
+        # when the current group's length is at ideal, we first want to try
+        # completing the group, then try adding the elements if there are any
+        # to add, since we know that we're below the maximum current_group
+        # length.
+        case ungrouped do
+          []        -> [:complete]
+          ungrouped -> [:complete, :add]
+        end
     end
-  end
-
-  @spec add_actions(list(any())) :: list({:add, any()})
-  defp add_actions([]), do: []
-  defp add_actions(ungrouped) do
-    for _ <- 1..length(ungrouped), do: :add
   end
 
   @doc false
